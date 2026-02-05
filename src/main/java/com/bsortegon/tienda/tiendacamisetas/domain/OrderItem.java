@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
+
 
 @Entity
 @NoArgsConstructor
@@ -21,10 +21,10 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(nullable = false)
-    private BigDecimal unitPrice;
+    private double unitPrice;
 
     @Transient
-    private BigDecimal totalPrice;
+    private double totalPrice;
 
     @ManyToOne
     @JoinColumn(name = "order_id")

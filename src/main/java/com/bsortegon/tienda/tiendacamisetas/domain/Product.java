@@ -5,11 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Entity @Getter @Setter @NoArgsConstructor
 @Table(name = "products")
@@ -21,8 +19,7 @@ public class Product{
 
     private String name;
     private String category;
-    private BigDecimal price;
-    private String description;
+    private double price;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants = new ArrayList<>();

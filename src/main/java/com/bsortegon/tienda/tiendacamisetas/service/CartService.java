@@ -2,7 +2,7 @@ package com.bsortegon.tienda.tiendacamisetas.service;
 
 import com.bsortegon.tienda.tiendacamisetas.domain.CartItem;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 
 public interface CartService {
@@ -16,7 +16,7 @@ public interface CartService {
     // Cart queries
     List<CartItem> getItems();
     Integer getTotalItems();
-    BigDecimal getTotal();
+    double getTotal();
     boolean isEmpty();
     
     // Validations

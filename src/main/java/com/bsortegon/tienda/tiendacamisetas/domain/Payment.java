@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +20,7 @@ public class Payment {
     private Long id;
 
     @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
+    private double amount;
 
     @Column(name = "paymenth_method", nullable = false)
     private String paymentMethod;

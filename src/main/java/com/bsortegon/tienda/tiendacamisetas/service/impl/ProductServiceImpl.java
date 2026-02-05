@@ -1,8 +1,10 @@
 package com.bsortegon.tienda.tiendacamisetas.service.impl;
 
 import com.bsortegon.tienda.tiendacamisetas.domain.Product;
+import com.bsortegon.tienda.tiendacamisetas.domain.ProductVariant;
 import com.bsortegon.tienda.tiendacamisetas.dto.request.AddProductCatalogRequest;
-import com.bsortegon.tienda.tiendacamisetas.dto.request.VarianteDTO;
+import com.bsortegon.tienda.tiendacamisetas.dto.response.ProductResponse;
+import com.bsortegon.tienda.tiendacamisetas.dto.response.VariantResponse;
 import com.bsortegon.tienda.tiendacamisetas.repository.ProductRepository;
 import com.bsortegon.tienda.tiendacamisetas.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -11,10 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -27,21 +27,33 @@ public class ProductServiceImpl implements ProductService {
         Product product = new Product();
         product.setName(request.name());
         product.setCategory(request.category());
-        product.setPrice(request.basicPrice());
-        product.setDescription("Product: " + request.name());
+        product.setPrice(request.price());
+        List<ProductVariant> variants = request.variants().stream().map(dto -> {
+            ProductVariant variant = new ProductVariant();
+            variant.setStock((long) dto.stock());
+            variant.setAttribute(dto.attributes());
+            variant.setProduct(product);
+            return variant;
+        }).toList();
 
-        Stream<VarianteDTO> variantEntities = request.variantes().stream();
+        product.setVariants(variants);
+
         return productRepository.save(product);
     }
 
-    @Override
-    public Product save(Product product) {
-        return null;
-    }
 
     @Override
-    public Optional<Product> findById(Long id) {
-        return Optional.empty();
+     public ProductResponse findById(Long id) {
+
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        List<VariantResponse> variantResponses = product.getVariants().stream().map(variant -> new VariantResponse(
+                variant.getId(),
+                variant.getStock(),
+                variant.getAttribute()
+        )).toList();
+
+        return new ProductResponse(product.getId(), product.getName(), product.getCategory(), product.getPrice(), variantResponses);
+
     }
 
     @Override
@@ -70,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findByPriceGreaterThan(BigDecimal price) {
+    public List<Product> findByPriceGreaterThan(double price) {
         return List.of();
     }
 
@@ -85,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findByPrecioGreaterThan(BigDecimal precio) {
+    public List<Product> findByPrecioGreaterThan(double precio) {
         return List.of();
     }
 
