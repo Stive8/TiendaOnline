@@ -4,9 +4,9 @@ import java.util.List;
 
 public record ProductResponse(
         Long id,
-        String nombre,
-        String descripcion,
-        Double precio,
+        String name,
+        String category,
+        String description,
         List<VariantResponse> variants
 ) {
 }

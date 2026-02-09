@@ -1,5 +1,6 @@
 package com.bsortegon.tienda.tiendacamisetas.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,9 +20,10 @@ public class Product{
 
     private String name;
     private String category;
-    private double price;
+    private String description;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ProductVariant> variants = new ArrayList<>();
 
 

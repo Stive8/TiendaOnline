@@ -5,6 +5,7 @@ import java.util.Map;
 public record VariantResponse(
         Long id,
         Long stock,
+        Double price,
         Map<String, String> attributes
 ) {
 }

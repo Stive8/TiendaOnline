@@ -6,11 +6,10 @@ import com.bsortegon.tienda.tiendacamisetas.dto.request.AddProductCatalogRequest
 import com.bsortegon.tienda.tiendacamisetas.dto.response.ProductResponse;
 import com.bsortegon.tienda.tiendacamisetas.dto.response.VariantResponse;
 import com.bsortegon.tienda.tiendacamisetas.repository.ProductRepository;
+import com.bsortegon.tienda.tiendacamisetas.repository.ProductVariantRepository;
 import com.bsortegon.tienda.tiendacamisetas.service.ProductService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -22,21 +21,32 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductVariantRepository variantRepository;
+
     @Transactional
     public Product save(AddProductCatalogRequest request) {
-        Product product = new Product();
-        product.setName(request.name());
-        product.setCategory(request.category());
-        product.setPrice(request.price());
-        List<ProductVariant> variants = request.variants().stream().map(dto -> {
+        // Buscar producto existente por name y categoría
+        Product product = productRepository.findByNameAndCategory(request.name(), request.category())
+                .orElseGet(() -> {
+                    Product newProduct = new Product();
+                    newProduct.setName(request.name());
+                    newProduct.setCategory(request.category());
+                    newProduct.setDescription(request.description());
+                    return newProduct;
+                });
+
+        // Crear nuevas variantes
+        List<ProductVariant> newVariants = request.variants().stream().map(dto -> {
             ProductVariant variant = new ProductVariant();
             variant.setStock((long) dto.stock());
+            variant.setPrice(dto.price());
             variant.setAttribute(dto.attributes());
             variant.setProduct(product);
             return variant;
         }).toList();
 
-        product.setVariants(variants);
+        product.getVariants().addAll(newVariants);
 
         return productRepository.save(product);
     }
@@ -49,71 +59,42 @@ public class ProductServiceImpl implements ProductService {
         List<VariantResponse> variantResponses = product.getVariants().stream().map(variant -> new VariantResponse(
                 variant.getId(),
                 variant.getStock(),
+                variant.getPrice(),
                 variant.getAttribute()
         )).toList();
 
-        return new ProductResponse(product.getId(), product.getName(), product.getCategory(), product.getPrice(), variantResponses);
+        return new ProductResponse(product.getId(), product.getName(), product.getCategory(), product.getDescription(), variantResponses);
 
+    }
+
+    @Override
+    public List<ProductVariant> findByCategory(String category) {
+        return variantRepository.findByCategory(category);
     }
 
     @Override
     public List<Product> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public Page<Product> findAll(Pageable pageable) {
-        return null;
+        return productRepository.findAll();
     }
 
     @Override
     public void deleteById(Long id) {
-
+        productRepository.deleteById(id);
     }
 
     @Override
-    public List<Product> findByCategory(String category) {
-        return List.of();
+    public List<ProductVariant> findByAttribute(String attributeName, String attributeValue) {
+        return variantRepository.findByAttribute(attributeName, attributeValue);
     }
 
     @Override
-    public List<Product> findByNameContaining(String name) {
-        return List.of();
-    }
-
-    @Override
-    public List<Product> findByPriceGreaterThan(double price) {
-        return List.of();
-    }
-
-    @Override
-    public List<Product> findByCategoria(String categoria) {
-        return List.of();
-    }
-
-    @Override
-    public List<Product> findByNombreContaining(String nombre) {
-        return List.of();
-    }
-
-    @Override
-    public List<Product> findByPrecioGreaterThan(double precio) {
-        return List.of();
-    }
-
-    @Override
-    public boolean hasStock(Long id, Integer quantity) {
-        return false;
-    }
-
-    @Override
-    public void updateStock(Long id, Integer quantity) {
-
+    public List<ProductVariant> findByCategoryAndAttribute(String category, String attributeName, String attributeValue) {
+        return variantRepository.findByCategoryAndAttribute(category, attributeName, attributeValue);
     }
 
     @Override
     public boolean existsById(Long id) {
-        return false;
+        return productRepository.existsById(id);
     }
 }
 

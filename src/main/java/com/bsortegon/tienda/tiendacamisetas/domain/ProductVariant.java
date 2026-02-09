@@ -1,6 +1,7 @@
 package com.bsortegon.tienda.tiendacamisetas.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,9 @@ public class ProductVariant {
     @Column(name = "stock", nullable = false)
     private Long stock;
 
+    @Column(name = "price", nullable = false)
+    private Double price;
+
     @ElementCollection
     @CollectionTable(name = "product_attributes", joinColumns = @JoinColumn (name = "variant_id"))
     @MapKeyColumn(name = "attribute_name")
@@ -29,6 +33,7 @@ public class ProductVariant {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
 }
