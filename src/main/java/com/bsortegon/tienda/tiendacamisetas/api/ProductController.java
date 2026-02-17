@@ -5,6 +5,7 @@ import com.bsortegon.tienda.tiendacamisetas.domain.ProductVariant;
 import com.bsortegon.tienda.tiendacamisetas.dto.request.AddProductCatalogRequest;
 import com.bsortegon.tienda.tiendacamisetas.dto.response.ProductResponse;
 import com.bsortegon.tienda.tiendacamisetas.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,11 +15,9 @@ import java.util.List;
 @RequestMapping("/api/productos")
 public class ProductController {
 
-    private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+    @Autowired
+    private ProductService productService;
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
