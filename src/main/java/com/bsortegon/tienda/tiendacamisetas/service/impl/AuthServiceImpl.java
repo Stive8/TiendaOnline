@@ -2,6 +2,7 @@ package com.bsortegon.tienda.tiendacamisetas.service.impl;
 
 import com.bsortegon.tienda.tiendacamisetas.config.JwtUtil;
 import com.bsortegon.tienda.tiendacamisetas.domain.User;
+import com.bsortegon.tienda.tiendacamisetas.domain.UserRole;
 import com.bsortegon.tienda.tiendacamisetas.dto.auth.LoginRequest;
 import com.bsortegon.tienda.tiendacamisetas.dto.auth.LoginResponse;
 import com.bsortegon.tienda.tiendacamisetas.dto.auth.RegisterRequest;
@@ -49,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRol()
+                user.getRol().name()
         );
     }
 
@@ -67,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setPhoneNumbers(request.phoneNumbers());
-        user.setRol("USER");
+        user.setRol(UserRole.CUSTOMER);
         user.setRecordDate(LocalDateTime.now());
 
         userRepository.save(user);
@@ -80,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRol()
+                user.getRol().name()
         );
     }
 

@@ -19,8 +19,11 @@ public class Product{
     private Long id;
 
     private String name;
-    private String category;
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

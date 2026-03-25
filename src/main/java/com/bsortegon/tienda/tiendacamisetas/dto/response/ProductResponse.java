@@ -5,7 +5,8 @@ import java.util.List;
 public record ProductResponse(
         Long id,
         String name,
-        String category,
+        Long categoryId,
+        String categoryName,
         String description,
         List<VariantResponse> variants
 ) {

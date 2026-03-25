@@ -2,9 +2,11 @@ package com.bsortegon.tienda.tiendacamisetas.service.impl;
 
 import com.bsortegon.tienda.tiendacamisetas.domain.Product;
 import com.bsortegon.tienda.tiendacamisetas.domain.ProductVariant;
+import com.bsortegon.tienda.tiendacamisetas.domain.Category;
 import com.bsortegon.tienda.tiendacamisetas.dto.request.AddProductCatalogRequest;
 import com.bsortegon.tienda.tiendacamisetas.dto.response.ProductResponse;
 import com.bsortegon.tienda.tiendacamisetas.dto.response.VariantResponse;
+import com.bsortegon.tienda.tiendacamisetas.repository.CategoryRepository;
 import com.bsortegon.tienda.tiendacamisetas.repository.ProductRepository;
 import com.bsortegon.tienda.tiendacamisetas.repository.ProductVariantRepository;
 import com.bsortegon.tienda.tiendacamisetas.service.ProductService;
@@ -24,31 +26,62 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductVariantRepository variantRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Transactional
     public Product save(AddProductCatalogRequest request) {
-        // Buscar producto existente por name y categoría
-        Product product = productRepository.findByNameAndCategory(request.name(), request.category())
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + request.categoryId()));
+
+        Product product = productRepository.findByNameAndCategory(request.name(), category)
                 .orElseGet(() -> {
                     Product newProduct = new Product();
                     newProduct.setName(request.name());
-                    newProduct.setCategory(request.category());
+                    newProduct.setCategory(category);
                     newProduct.setDescription(request.description());
                     return newProduct;
                 });
 
-        // Crear nuevas variantes
         List<ProductVariant> newVariants = request.variants().stream().map(dto -> {
             ProductVariant variant = new ProductVariant();
             variant.setStock((long) dto.stock());
             variant.setPrice(dto.price());
+            variant.setImageUrl(dto.imageUrl());
             variant.setAttribute(dto.attributes());
             variant.setProduct(product);
             return variant;
         }).toList();
 
         product.getVariants().addAll(newVariants);
-
         return productRepository.save(product);
+    }
+
+    @Transactional
+    public ProductResponse update(Long id, AddProductCatalogRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
+
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + request.categoryId()));
+
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setCategory(category);
+
+        product.getVariants().clear();
+        List<ProductVariant> newVariants = request.variants().stream().map(dto -> {
+            ProductVariant variant = new ProductVariant();
+            variant.setStock((long) dto.stock());
+            variant.setPrice(dto.price());
+            variant.setImageUrl(dto.imageUrl());
+            variant.setAttribute(dto.attributes());
+            variant.setProduct(product);
+            return variant;
+        }).toList();
+        product.getVariants().addAll(newVariants);
+
+        return findById(productRepository.save(product).getId());
     }
 
 
@@ -60,10 +93,17 @@ public class ProductServiceImpl implements ProductService {
                 variant.getId(),
                 variant.getStock(),
                 variant.getPrice(),
+                variant.getImageUrl(),
                 variant.getAttribute()
         )).toList();
 
-        return new ProductResponse(product.getId(), product.getName(), product.getCategory(), product.getDescription(), variantResponses);
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getCategory().getId(),
+                product.getCategory().getName(),
+                product.getDescription(),
+                variantResponses);
 
     }
 

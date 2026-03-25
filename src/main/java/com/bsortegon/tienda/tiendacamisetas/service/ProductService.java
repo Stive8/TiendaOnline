@@ -10,6 +10,7 @@ import java.util.List;
 public interface ProductService {
     
     Product save(AddProductCatalogRequest request);
+    ProductResponse update(Long id, AddProductCatalogRequest request);
     ProductResponse findById(Long id);
     List<Product> findAll();
     void deleteById(Long id);

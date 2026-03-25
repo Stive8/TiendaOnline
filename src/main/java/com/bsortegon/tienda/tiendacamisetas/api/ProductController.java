@@ -1,7 +1,9 @@
 package com.bsortegon.tienda.tiendacamisetas.api;
 
+import com.bsortegon.tienda.tiendacamisetas.config.RequireRole;
 import com.bsortegon.tienda.tiendacamisetas.domain.Product;
 import com.bsortegon.tienda.tiendacamisetas.domain.ProductVariant;
+import com.bsortegon.tienda.tiendacamisetas.domain.UserRole;
 import com.bsortegon.tienda.tiendacamisetas.dto.request.AddProductCatalogRequest;
 import com.bsortegon.tienda.tiendacamisetas.dto.response.ProductResponse;
 import com.bsortegon.tienda.tiendacamisetas.service.ProductService;
@@ -50,12 +52,20 @@ public class ProductController {
     }
 
     @PostMapping
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<ProductResponse> createProduct(@RequestBody AddProductCatalogRequest request) {
         Product product = productService.save(request);
         return ResponseEntity.ok(productService.findById(product.getId()));
     }
 
+    @PutMapping("/{id}")
+    @RequireRole(UserRole.ADMIN)
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody AddProductCatalogRequest request) {
+        return ResponseEntity.ok(productService.update(id, request));
+    }
+
     @DeleteMapping("/{id}")
+    @RequireRole(UserRole.ADMIN)
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         productService.deleteById(id);
         return ResponseEntity.ok("Producto eliminado exitosamente");

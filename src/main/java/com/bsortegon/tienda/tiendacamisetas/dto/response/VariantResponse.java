@@ -6,6 +6,7 @@ public record VariantResponse(
         Long id,
         Long stock,
         Double price,
+        String imageUrl,
         Map<String, String> attributes
 ) {
 }

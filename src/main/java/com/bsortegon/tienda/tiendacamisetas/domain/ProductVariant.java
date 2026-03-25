@@ -28,6 +28,9 @@ public class ProductVariant {
     @Column(name = "price", nullable = false)
     private Double price;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ElementCollection
     @CollectionTable(name = "product_attributes", joinColumns = @JoinColumn (name = "variant_id"))
     @MapKeyColumn(name = "attribute_name")
