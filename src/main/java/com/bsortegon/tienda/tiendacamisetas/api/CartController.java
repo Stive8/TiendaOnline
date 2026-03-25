@@ -2,6 +2,7 @@ package com.bsortegon.tienda.tiendacamisetas.api;
 
 import com.bsortegon.tienda.tiendacamisetas.dto.cart.AddCartItemRequest;
 import com.bsortegon.tienda.tiendacamisetas.dto.cart.CartResponse;
+import com.bsortegon.tienda.tiendacamisetas.dto.cart.UpdateQuantityRequest;
 import com.bsortegon.tienda.tiendacamisetas.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @GetMapping("/create")
+    @PostMapping
     public ResponseEntity<Long> createCart() {
         return ResponseEntity.ok(cartService.createCart());
     }
@@ -29,12 +30,17 @@ public class CartController {
         return ResponseEntity.ok(cartService.addProduct(cartId, request));
     }
 
+    @PutMapping("/{cartId}/items/{itemId}")
+    public ResponseEntity<CartResponse> updateQuantity(@PathVariable Long cartId, @PathVariable Long itemId, @RequestBody UpdateQuantityRequest request) {
+        return ResponseEntity.ok(cartService.updateQuantity(cartId, itemId, request));
+    }
+
     @DeleteMapping("/{cartId}/items/{itemId}")
     public ResponseEntity<CartResponse> removeFromCart(@PathVariable Long cartId, @PathVariable Long itemId) {
         return ResponseEntity.ok(cartService.removeItem(cartId, itemId));
     }
 
-    @DeleteMapping("/{cartId}/clear")
+    @DeleteMapping("/{cartId}")
     public ResponseEntity<Void> clearCart(@PathVariable Long cartId) {
         cartService.clearCart(cartId);
         return ResponseEntity.noContent().build();

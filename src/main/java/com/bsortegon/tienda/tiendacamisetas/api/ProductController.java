@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/productos")
+@RequestMapping("/api/products")
 public class ProductController {
 
 
@@ -50,9 +50,9 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createProduct(@RequestBody AddProductCatalogRequest request) {
-        productService.save(request);
-        return ResponseEntity.ok("Producto '" + request.name() + "' creado exitosamente");
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody AddProductCatalogRequest request) {
+        Product product = productService.save(request);
+        return ResponseEntity.ok(productService.findById(product.getId()));
     }
 
     @DeleteMapping("/{id}")

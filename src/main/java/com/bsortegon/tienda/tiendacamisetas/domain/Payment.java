@@ -1,5 +1,7 @@
 package com.bsortegon.tienda.tiendacamisetas.domain;
 
+import com.bsortegon.tienda.tiendacamisetas.domain.status.PaymentMethod;
+import com.bsortegon.tienda.tiendacamisetas.domain.status.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,13 +24,24 @@ public class Payment {
     @Column(name = "amount", nullable = false)
     private double amount;
 
-    @Column(name = "paymenth_method", nullable = false)
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod;
 
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private PaymentStatus status;
+
+    @Column(name = "transaction_id")
+    private String transactionId;
+
+    @Column(name = "idempotency_key", unique = true)
+    private String idempotencyKey;
+
+    @OneToOne(mappedBy = "payment")
+    private Order order;
 
 }

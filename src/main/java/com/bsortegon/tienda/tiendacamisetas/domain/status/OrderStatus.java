@@ -1,13 +1,9 @@
 package com.bsortegon.tienda.tiendacamisetas.domain.status;
 
 public enum OrderStatus {
-    PENDING_PAYMENT,
-    PAID,
-    PROCESSING,
-    SHIPPED,
-    DELIVERED,
-    CANCELLED,
-    RETURNED,
-    REFUNDED,
-    FAILED
+    CREATED,    // Order created, waiting for payment
+    PAID,       // Payment confirmed
+    SHIPPED,    // Order in transit
+    DELIVERED,  // Order completed
+    CANCELLED   // Order cancelled
 }

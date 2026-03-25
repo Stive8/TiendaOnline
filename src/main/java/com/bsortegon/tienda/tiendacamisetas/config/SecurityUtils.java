@@ -10,10 +10,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityUtils {
 
-    @Autowired
-    private UserRepository userRepository;
+    private static UserRepository userRepository;
 
-    public User getAuthenticatedUser() {
+    @Autowired
+    public SecurityUtils(UserRepository userRepository) {
+        SecurityUtils.userRepository = userRepository;
+    }
+
+    public static User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new RuntimeException("Usuario no autenticado");

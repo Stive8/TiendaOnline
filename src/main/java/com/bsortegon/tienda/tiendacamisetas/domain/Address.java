@@ -28,6 +28,9 @@ public class Address {
     @Column(name = "departamento", nullable = false)
     private String departamento;
 
+    @Column(name = "codigo_postal")
+    private String codigoPostal;
+
     @Column(name = "reference")
     private String reference;
 

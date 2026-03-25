@@ -1,5 +1,6 @@
 package com.bsortegon.tienda.tiendacamisetas.domain;
 
+import com.bsortegon.tienda.tiendacamisetas.domain.status.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,11 +21,18 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private OrderStatus status;
+
+    @Column(name = "idempotency_key", unique = true)
+    private String idempotencyKey;
 
     @Column(name = "total", nullable = false)
     private double total;
@@ -51,5 +59,9 @@ public class Order {
     @OneToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
+
+    // Una orden tiene un envío (opcional hasta que se envíe)
+    @OneToOne(mappedBy = "order")
+    private Shipment shipment;
 
 }

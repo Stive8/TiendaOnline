@@ -7,10 +7,12 @@ import com.bsortegon.tienda.tiendacamisetas.dto.cart.AddCartItemRequest;
 import com.bsortegon.tienda.tiendacamisetas.dto.cart.CartItemResponse;
 import com.bsortegon.tienda.tiendacamisetas.dto.cart.CartResponse;
 import com.bsortegon.tienda.tiendacamisetas.dto.cart.UpdateQuantityRequest;
+import com.bsortegon.tienda.tiendacamisetas.exception.InsufficientStockException;
 import com.bsortegon.tienda.tiendacamisetas.repository.CartItemRepository;
 import com.bsortegon.tienda.tiendacamisetas.repository.CartRepository;
 import com.bsortegon.tienda.tiendacamisetas.repository.ProductVariantRepository;
 import com.bsortegon.tienda.tiendacamisetas.service.CartService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,7 @@ public class CartServiceImpl implements CartService {
         return mapToResponse(cart);
     }
 
+    @Transactional
     @Override
     public CartResponse addProduct(Long cartId, AddCartItemRequest request) {
         if (request.quantity() <= 0) {
@@ -48,7 +51,7 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
-        ProductVariant variant = productVariantRepository.findById(request.variantId())
+        ProductVariant variant = productVariantRepository.findByIdWithLock(request.variantId())
                 .orElseThrow(() -> new RuntimeException("Variant not found"));
 
         cartItemRepository.findByCartIdAndProductVariantId(cartId, request.variantId())
@@ -56,14 +59,22 @@ public class CartServiceImpl implements CartService {
                     int newQuantity = item.getAmount() + request.quantity();
 
                     if (variant.getStock() < newQuantity) {
-                        throw new RuntimeException("Insufficient stock");
+                        throw new InsufficientStockException(
+                            variant.getProduct().getName(),
+                            variant.getStock(),
+                            newQuantity
+                        );
                     }
 
                     item.setAmount(newQuantity);
                     cartItemRepository.save(item);
                 }, () -> {
                     if (variant.getStock() < request.quantity()) {
-                        throw new RuntimeException("Insufficient stock");
+                        throw new InsufficientStockException(
+                            variant.getProduct().getName(),
+                            variant.getStock(),
+                            request.quantity()
+                        );
                     }
 
                     CartItem newItem = new CartItem();
@@ -77,6 +88,7 @@ public class CartServiceImpl implements CartService {
         return getCart(cartId);
     }
 
+    @Transactional
     @Override
     public CartResponse removeItem(Long cartId, Long itemId) {
         Cart cart = cartRepository.findById(cartId)
@@ -89,10 +101,14 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("Item does not belong to this cart");
         }
         
+        cart.getCartItems().remove(item);
         cartItemRepository.delete(item);
+        cartRepository.flush();
+        
         return getCart(cartId);
     }
 
+    @Transactional
     @Override
     public CartResponse updateQuantity(Long cartId, Long itemId, UpdateQuantityRequest request) {
         if (request.quantity() <= 0) {
@@ -106,8 +122,16 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("Item does not belong to this cart");
         }
         
-        if (item.getProductVariant().getStock() < request.quantity()) {
-            throw new RuntimeException("Insufficient stock");
+        // PESSIMISTIC LOCK: Bloquear variant para validar stock
+        ProductVariant variant = productVariantRepository.findByIdWithLock(item.getProductVariant().getId())
+                .orElseThrow(() -> new RuntimeException("Variant not found"));
+        
+        if (variant.getStock() < request.quantity()) {
+            throw new InsufficientStockException(
+                variant.getProduct().getName(),
+                variant.getStock(),
+                request.quantity()
+            );
         }
         
         item.setAmount(request.quantity());
@@ -116,6 +140,7 @@ public class CartServiceImpl implements CartService {
         return getCart(cartId);
     }
 
+    @Transactional
     @Override
     public void clearCart(Long cartId) {
         Cart cart = cartRepository.findById(cartId)
